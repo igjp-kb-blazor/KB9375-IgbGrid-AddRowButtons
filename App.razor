@@ -1,0 +1,67 @@
+﻿<div style="max-width:640px; margin:40px auto;">
+    <IgbGrid @ref="_Grid"
+             AutoGenerate="false"
+             Height="250px"
+             DisplayDensity="DisplayDensity.Compact"
+             Data="this._SampleData"
+             PrimaryKey="@nameof(PersonalInfo.Id)">
+
+        <IgbColumn Header="Name" Field="@nameof(PersonalInfo.Name)" Sortable="true" />
+
+        <IgbColumn Header="E-Mail" Field="@nameof(PersonalInfo.Email)" Sortable="true" />
+
+        <IgbColumn Header="Phone Number" Field="@nameof(PersonalInfo.Phone)" Sortable="true" />
+
+        <IgbColumn Width="80px">
+
+            @* BodyTemplate テンプレートパラメータの中に、任意のマークアップを記述できます。 *@
+            <BodyTemplate>
+                @* BodyTemplate 内では、"context" という名前の変数(引数)を参照できます。
+                この context から行ごとの情報を参照できます。 *@
+                <button @onclick="(() => OnClickDelete(context))">
+                    削除
+                </button>
+            </BodyTemplate>
+        </IgbColumn>
+
+    </IgbGrid>
+</div>
+
+@code
+{
+    private IgbGrid? _Grid;
+
+    private readonly List<PersonalInfo> _SampleData = new()
+    {
+        // サンプルデータは https://jsonplaceholder.typicode.com/ を参照しました
+        new(1, "Leanne Graham", "jincere@april.biz", "1-770-736-8031 x56442"),
+        new(2, "Ervin Howell", "Shanna@melissa.tv", "010-692-6593 x09125"),
+        new(3, "Clementine Bauch", "Nathan@yesenia.net", "1-463-123-4447"),
+        new(4, "Patricia Lebsack", "Julianne.OConner@kory.org", "493-170-9623 x156"),
+        new(5, "Chelsey Dietrich", "Lucio_Hettinger@annie.ca", "(254)954-1289"),
+        new(6, "Mrs. Dennis Schulist", "Karley_Dach@jasper.info", "1-477-935-8478 x6430"),
+        new(7, "Kurtis Weissnat", "Telly.Hoeger@billy.biz", "210.067.6132"),
+        new(8, "Nicholas Runolfsdottir V", "Sherwood@rosamond.me", "586.493.6943 x140"),
+        new(9, "Glenna Reichert", "Chaim_McDermott@dana.io", "(775)976-6794 x41206"),
+        new(10,"Clementina DuBuque", "Rey.Padberg@karina.biz", "024-648-3804"),
+    };
+
+    /// <summary>
+    /// 各行の "削除" ボタンがクリックされたときに呼び出されます
+    /// </summary>
+    private void OnClickDelete(IgbCellTemplateContext context)
+    {
+        // コンテキストをもとに、削除対象のデータ行を特定します。
+        var targetIndex = _SampleData.FindIndex(data => data.Id.ToString() == context.Cell.Id.RowID);
+        if (targetIndex == -1) throw new Exception("削除対象の行が見つかりません。");
+        var targetData = _SampleData[targetIndex];
+
+        // 実際にデータソースから対象データを削除します。
+        _SampleData.RemoveAt(targetIndex);
+
+        // それだけでは IgbGrid はデータ行が削除されたことの変更を検知できないため、
+        // IgbGrid の NotifyRemoveItem メソッドを呼び出して、どのデータ行が削除されたのかを IgbGrid に明示的に知らせます。
+        // これにより、IgbGrid は表示を更新します。
+        _Grid?.NotifyRemoveItem(_SampleData, targetIndex, targetData);
+    }
+}
